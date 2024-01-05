@@ -7,6 +7,8 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  CollectedInvoiceAmount,
+  PendingInvoiceAmount,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -29,6 +31,52 @@ export async function fetchRevenue() {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');
+  }
+}
+
+export async function fetchTotalInvoices() {
+  const data = await sql`SELECT COUNT(*) FROM invoices`;
+  return data.rows[0] as unknown as { count: number };
+}
+
+export async function fetchTotalCustomers() {
+  const data = await sql`SELECT COUNT(*) FROM customers`;
+  return data.rows[0] as unknown as { count: number };
+}
+
+export async function fetchTotalPaidInvoices() {
+  try {
+    const data = await sql<CollectedInvoiceAmount>`
+    SELECT invoices.amount 
+    FROM invoices
+    WHERE invoices.status = 'paid'
+    `;
+    console.log(data.rows);
+    const collectedAmount = data.rows
+      .map((invoice) => invoice.amount)
+      .reduce((prev, curr) => prev + curr);
+    return formatCurrency(collectedAmount);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the total paid invoices.');
+  }
+}
+
+export async function fetchTotalPendingInvoices() {
+  try {
+    const data = await sql<PendingInvoiceAmount>`
+    SELECT invoices.amount 
+    FROM invoices
+    WHERE invoices.status = 'pending'
+    `;
+    console.log(data.rows);
+    const collectedAmount = data.rows
+      .map((invoice) => invoice.amount)
+      .reduce((prev, curr) => prev + curr);
+    return formatCurrency(collectedAmount);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the total pending invoices.');
   }
 }
 
