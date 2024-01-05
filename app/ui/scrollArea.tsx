@@ -48,7 +48,6 @@ export function ScrollArea({
     <div
       className={clsx(
         orientationVariantValues[breakpoint][orientation],
-        '',
         className,
       )}
       {...props}
